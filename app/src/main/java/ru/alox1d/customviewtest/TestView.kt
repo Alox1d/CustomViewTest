@@ -5,19 +5,23 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.util.AttributeSet
+import android.util.Log
 import android.view.MotionEvent
 import android.view.View
+import kotlin.math.atan2
 
 class TestView(context: Context, attributeSet: AttributeSet) : View(context, attributeSet) {
 
     private val paint = Paint()
     private val paintC = Paint()
-    private val startAngle = -180f
+    private val startAngle = 0f
     private val colors = listOf(
         Color.RED,
         Color.BLUE,
         Color.GREEN,
         Color.YELLOW,
+        Color.CYAN,
+        Color.MAGENTA,
     )
     private val sweepAngle = 360f / colors.size
     private var buttonClicked = -1
@@ -48,7 +52,7 @@ class TestView(context: Context, attributeSet: AttributeSet) : View(context, att
                 centerX + radius,
                 centerY + radius,
                 startAngle + sweepAngle * i,
-                90f,
+                sweepAngle,
                 true,
                 paintC
             )
@@ -63,18 +67,14 @@ class TestView(context: Context, attributeSet: AttributeSet) : View(context, att
 
         when(event.action){
             MotionEvent.ACTION_DOWN -> {
-                if (x < centerX && y < centerY) {
-                    buttonClicked = 0
-                }
-                if (x > centerX && y < centerY) {
-                    buttonClicked = 1
-                }
-                if (x > centerX && y > centerY) {
-                    buttonClicked = 2
-                }
-                if (x < centerX && y > centerY) {
-                    buttonClicked = 3
-                }
+                val angle = (Math.toDegrees(
+                    atan2(
+                        y - centerY,
+                        x - centerX
+                    ).toDouble()
+                ) + 360) % 360
+                buttonClicked = (angle / ( 360 / colors.size)).toInt()
+                Log.d("MyLog", "Angle: $angle")
                 invalidate()
             }
             MotionEvent.ACTION_UP -> {
