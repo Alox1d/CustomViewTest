@@ -12,6 +12,8 @@ import kotlin.math.atan2
 
 class TestView(context: Context, attributeSet: AttributeSet) : View(context, attributeSet) {
 
+    var listener: Listener? = null
+
     private val paint = Paint()
     private val paintC = Paint()
     private val startAngle = 0f
@@ -24,7 +26,7 @@ class TestView(context: Context, attributeSet: AttributeSet) : View(context, att
         Color.MAGENTA,
     )
     private val sweepAngle = 360f / colors.size
-    private var buttonClicked = -1
+    private var buttonClicked = 0
 
     init {
         paint.style = Paint.Style.STROKE
@@ -45,7 +47,7 @@ class TestView(context: Context, attributeSet: AttributeSet) : View(context, att
         val radius = width.coerceAtMost(height) / 2f
 
         for (i in colors.indices) {
-            paintC.color = if (i == buttonClicked) Color.GRAY else colors[i]
+            paintC.color = colors[i]
             canvas.drawArc(
                 centerX - radius,
                 centerY - radius,
@@ -57,6 +59,14 @@ class TestView(context: Context, attributeSet: AttributeSet) : View(context, att
                 paintC
             )
         }
+
+        paintC.color = colors[buttonClicked]
+        canvas.drawCircle(
+            centerX,
+            centerY,
+            radius / 1.7f,
+            paintC
+        )
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
@@ -65,7 +75,7 @@ class TestView(context: Context, attributeSet: AttributeSet) : View(context, att
         val x = event.x
         val y = event.y
 
-        when(event.action){
+        when (event.action) {
             MotionEvent.ACTION_DOWN -> {
                 val angle = (Math.toDegrees(
                     atan2(
@@ -73,15 +83,16 @@ class TestView(context: Context, attributeSet: AttributeSet) : View(context, att
                         x - centerX
                     ).toDouble()
                 ) + 360) % 360
-                buttonClicked = (angle / ( 360 / colors.size)).toInt()
+                buttonClicked = (angle / (360 / colors.size)).toInt()
+                listener?.onClick(buttonClicked)
                 Log.d("MyLog", "Angle: $angle")
-                invalidate()
-            }
-            MotionEvent.ACTION_UP -> {
-                buttonClicked = -1
                 invalidate()
             }
         }
         return true
+    }
+
+    interface Listener {
+        fun onClick(index: Int)
     }
 }
